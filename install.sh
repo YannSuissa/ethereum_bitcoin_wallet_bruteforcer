@@ -4,5 +4,6 @@ make distclean
 ./configure
 make -j 8
 make install
+ldconfig
 cd -
 make
