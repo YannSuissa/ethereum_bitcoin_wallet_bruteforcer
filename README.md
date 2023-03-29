@@ -1,2 +1,4 @@
-# ethereum_bitcon_wallet_bruteforcer
-Ethereum &amp; bitcon wallet bruteforcer
+Ethereum &amp; Bitcoin wallet bruteforcer
+
+For the bitcoin puzzle and more.
+
