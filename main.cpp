@@ -8,6 +8,9 @@ using namespace std;
 //https://github.com/imitko/ethereum-address-generator
 //https://www.rfctools.com/ethereum-address-test-tool/
 //https://keys.lol/
+//https://privatekeyfinder.io/bitcoin-puzzle/
+//https://privatekeys.pw/puzzles/bitcoin-puzzle-tx
+
 
 // -------------------- GLOBALS --------------------
 
