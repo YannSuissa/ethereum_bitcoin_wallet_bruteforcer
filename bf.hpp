@@ -29,7 +29,6 @@ class c_bf {
     std::map<std::vector<unsigned char>, int> look_array_eth;
     std::map<std::string, int>                look_array_btc;
     long long int                             cpt = 0;
-    bool                                      fake_success = false;
     unsigned char *                           pattern_mode = NULL;
     int                                       pattern_len = 0;
     secp256k1_context *                       p_eth_ctx; 
@@ -43,7 +42,8 @@ class c_bf {
 
 
     c_bf() { 
-      p_eth_ctx = secp256k1_context_create(SECP256K1_CONTEXT_NONE);
+      //p_eth_ctx = secp256k1_context_create(SECP256K1_CONTEXT_NONE);
+      p_eth_ctx = secp256k1_context_create(SECP256K1_CONTEXT_SIGN);
       p_btc_ctx = secp256k1_context_create(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY);
     }
     ~c_bf() {

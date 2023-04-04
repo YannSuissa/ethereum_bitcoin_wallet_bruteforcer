@@ -181,7 +181,20 @@ void                compute() {
 
   while (1) {
     // gen a key
-    randombytes_buf(priv_e, PRIVATE_KEY_SIZE);
+    if (!(p_bf->cpt % 0xffffff)) {
+      randombytes_buf(priv_e, PRIVATE_KEY_SIZE);
+      priv_e[PRIVATE_KEY_SIZE - 3] = 0;
+      priv_e[PRIVATE_KEY_SIZE - 2] = 0;
+      priv_e[PRIVATE_KEY_SIZE - 1] = 0;      
+    }
+    else {
+      if (priv_e[PRIVATE_KEY_SIZE - 1] == 0xff) {
+        priv_e[PRIVATE_KEY_SIZE - 2]++;
+        if (priv_e[PRIVATE_KEY_SIZE - 2] == 0xff)
+          priv_e[PRIVATE_KEY_SIZE - 3]++;
+      }
+      priv_e[PRIVATE_KEY_SIZE - 1]++;
+    }
     memcpy(priv_b, priv_e, PRIVATE_KEY_SIZE);
 
     if (p_bf->look_array_eth.size())
@@ -189,35 +202,14 @@ void                compute() {
     if (p_bf->look_array_btc.size())    
       p_bf->gen_btc_key_pair(priv_b, address_b);
 
-    // print_key(priv, crypto_sign_SEEDBYTES, "start private");
+    // print_key(priv_e, crypto_sign_SEEDBYTES, "start private");
     // print_key(address + 12, ADDRESS_SIZE, "start pub");
     // printf("%s\n", address);
     // printf("%30s : %s\n", "finish address pub", address);
 
-    if (p_bf->cpt == 4242) {
-      // exception for debug eth
-      //0101010101010101010101010101010101010101010101010101010101010101
-      //1a642f0e3c3af545e7acbd38b07251b3990914f1
-      memset(priv_e, 1, PRIVATE_KEY_SIZE);
-      //print_key(priv, crypto_sign_SEEDBYTES, "start private");
-      //print_key(address + 12, ADDRESS_SIZE, "start pub");
-    }
-
-    // // address bin to vector<unsigned char> for map searching
-    // unsigned char *tmp_bin = address + 12;
-    // std::vector<unsigned char> e;
-    // for (int i = 0; i < ADDRESS_SIZE; i++) {
-    //   e.push_back(tmp_bin[i]);
-    // }
 
     if (p_bf->look_array_btc.size()) {
       std::string t = (char *)address_b;
-      // for (auto it = p_bf->look_array_btc.begin() ; it != p_bf->look_array_btc.end(); it++) {
-      //   if (!strcmp(it->first.c_str(), (char *)address))
-      //     printf("----------------- OK\n");
-      //     printf("addr list find 1 %s - %d\n", it->first.c_str(), strlen(it->first.c_str()));
-      //     printf("addr list find 2 %s - %d\n", (char *)address, strlen((char *)address));
-      // }
 
       if (p_bf->look_array_btc.find(t) != p_bf->look_array_btc.end()) {
         printf("\n____________________________________________________________________________________________________\n");
@@ -292,6 +284,7 @@ int main(int argc, char **argv) {
   c_bf bf;
   bool noeth = false;
   bool nobtc = false;
+  bool fake_success = false;
 
   p_bf = &bf;
   
@@ -301,7 +294,7 @@ int main(int argc, char **argv) {
     switch(getopt(argc, argv, "fp:hc:EB")) // note the colon (:) to indicate that 'b' has a parameter and is not a switch
     {
       case 'f':
-        p_bf->fake_success = true;
+        fake_success = true;
         continue;
 
       case 'p':
@@ -340,9 +333,11 @@ int main(int argc, char **argv) {
   }
 
   if (!p_bf->pattern_mode) {
-    if (p_bf->fake_success) {
-      load_address_db("addresses_sample_eth.csv", 1);
-      load_address_db("addresses_sample_btc.csv", 2);
+    if (fake_success) {
+      if (noeth == false)
+        load_address_db("addresses_sample_eth.csv", 1);
+      if (nobtc == false)
+        load_address_db("addresses_sample_btc.csv", 2);
     }
     else {
       if (noeth == false)

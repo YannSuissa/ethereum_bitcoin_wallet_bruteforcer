@@ -8,13 +8,16 @@ void    c_bf::gen_eth_key_pair(unsigned char *priv, unsigned char *address,
   unsigned char     public_key[65];
   size_t            len = 65;
 
-  if (p_bf->cpt == 4242) {
+  if (p_bf->cpt == 10000) {
+    // exception for debug eth / btc
+    // 0101010101010101010101010101010101010101010101010101010101010101
+    // 1a642f0e3c3af545e7acbd38b07251b3990914f1
     memset(priv, 1, PRIVATE_KEY_SIZE);
   }
-
   secp256k1_ec_pubkey_create(p_eth_ctx, &pubkey, priv);
   // print_key(priv, crypto_sign_SEEDBYTES, "start private2");
   // print_key(pubkey.data, 64, "secp256k1_ec_pubkey_create");
+
   secp256k1_ec_pubkey_serialize(p_eth_ctx, public_key, &len, &pubkey, SECP256K1_EC_UNCOMPRESSED);
   // print_key(public_key, len, "secp256k1_ec_pubkey_serialize");
 

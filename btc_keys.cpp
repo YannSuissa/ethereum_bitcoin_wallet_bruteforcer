@@ -43,6 +43,8 @@ void    c_bf::gen_btc_key_pair(unsigned char *seckey, unsigned char *address) {
     memset(seckey, 0, 32 - p_complexity);
     if (p_complexity == 1 && !seckey[31])   // avoid all 0
       seckey[31] = 1;
+    if (p_complexity == 2 && !seckey[31] && !seckey[30])   // avoid all 0
+      seckey[31] = 1;
   }
 
   // for (int i = 0; i < 32; i++) {
