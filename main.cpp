@@ -119,8 +119,8 @@ void add_in_vector(unsigned char *hexstr) {
 void open_src_csv(const char *csv, int type)
 {
   FILE* stream = fopen(csv, "r");
-
-
+  if (!stream)
+    return;
   char line[1024];
   while (fgets(line, 1024, stream))
   {
@@ -276,7 +276,7 @@ void                compute() {
     // global inc
     p_bf->cpt++;
 
-    // if (p_bf->cpt > 1000000)
+    // if (p_bf->cpt > 100000)
     //   break;
     // if (p_bf->cpt > 100)
     //   break;
@@ -290,12 +290,15 @@ void                compute() {
 
 int main(int argc, char **argv) {
   c_bf bf;
+  bool noeth = false;
+  bool nobtc = false;
 
   p_bf = &bf;
+  
 
   for(;;)
   {
-    switch(getopt(argc, argv, "fp:hc:")) // note the colon (:) to indicate that 'b' has a parameter and is not a switch
+    switch(getopt(argc, argv, "fp:hc:EB")) // note the colon (:) to indicate that 'b' has a parameter and is not a switch
     {
       case 'f':
         p_bf->fake_success = true;
@@ -311,6 +314,12 @@ int main(int argc, char **argv) {
         }
         p_bf->pattern_len /= 2;
         skstr_to_sk((const unsigned char *)optarg, p_bf->pattern_mode, p_bf->pattern_len);
+        continue;
+      case 'E':
+        noeth = true;
+        continue;     
+      case 'B':
+        nobtc = true;
         continue;
       case 'c':
         p_bf->p_complexity = atoi((const char *)optarg);
@@ -336,8 +345,10 @@ int main(int argc, char **argv) {
       load_address_db("addresses_sample_btc.csv", 2);
     }
     else {
-      load_address_db("addresses_eth.csv", 1);
-      load_address_db("addresses_btc.csv", 2);
+      if (noeth == false)
+        load_address_db("addresses_eth.csv", 1);
+      if (nobtc == false)
+        load_address_db("addresses_btc.csv", 2);
     }
   }
 

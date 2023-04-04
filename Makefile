@@ -9,13 +9,12 @@ OBJS= main.cpp									\
 			btc_keys.cpp							\
 			keccak-tiny.cpp						\
 
-CFLAGS=-Wall -Ofast -std=c++11 -Wno-deprecated-declarations -Wno-unused-result
-#-fprofile-instr-generate -fcoverage-mapping -fprofile-arcs -ftest-coverage
+CFLAGS=-Wall -Ofast -fomit-frame-pointer -pipe -std=c++11 -march=native -Wno-deprecated-declarations -Wno-unused-result 
+# -fprofile-instr-generate -fcoverage-mapping -fprofile-arcs -ftest-coverage -pg
 CC=clang++
 INCLUDES= -I/opt/homebrew/include/ -I/usr/include -I/opt/homebrew/opt/openssl@3/include/
 LIBS_PATH= -L/opt/homebrew/lib/  -L/usr/lib/x86_64-linux-gnu/ -L/opt/homebrew/opt/openssl@3/lib
-LIBS= -lm -lsodium -lsecp256k1 -lcrypto
-
+LIBS= -lm -lsodium -lsecp256k1 -lcrypto 
 #-lprofiler
 
 # all: 
