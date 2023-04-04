@@ -9,5 +9,5 @@ fi
 
 for (( c=1; c<=$nb; c++ ))
 do
-   echo ./compute -c 9 -E &
+   ./compute -c 9 -E &
 done
