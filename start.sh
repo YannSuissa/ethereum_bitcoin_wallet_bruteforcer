@@ -1,8 +1,13 @@
+#!/bin/bash
+
 killall compute
-./compute -c 9 -E &
-./compute -c 9 -E &
-./compute -c 9 -E &
-./compute -c 9 -E &
-./compute -c 9 -E &
-./compute -c 9 -E &
-./compute -c 9 -E &
+
+nb=$1
+if [[ -z $1 ]]; then
+  nb=1
+fi
+
+for (( c=1; c<=$nb; c++ ))
+do
+   echo ./compute -c 9 -E &
+done
