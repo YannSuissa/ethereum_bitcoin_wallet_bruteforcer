@@ -19,7 +19,7 @@ c_bf *p_bf = NULL;
 // -------------------- UTILITIES --------------------
 
 // print a binary key to string hex
-std::string bin_to_str(unsigned char *key, int len) {
+std::string    c_bf::bin_to_str(unsigned char *key, int len) {
   std::string e;
 
   for(int i=0; i < len; ++i) {
@@ -30,7 +30,7 @@ std::string bin_to_str(unsigned char *key, int len) {
   return e;
 }
 
-void print_key(unsigned char *key, int len, std::string label) {
+void          c_bf::print_key(unsigned char *key, int len, std::string label) {
   printf("%30s : %s\n", label.c_str(), bin_to_str(key, len).c_str());
   // printf("%30s : 0x", label.c_str());
   // for(int i=0; i < len; ++i) {
@@ -69,11 +69,11 @@ void save_result(unsigned char *priv, unsigned char *pub, int type) {
       if (type == 2)
         FileName << "BTC Priv : ";  
 
-      FileName << bin_to_str(priv, PRIVATE_KEY_SIZE);
+      FileName << p_bf->bin_to_str(priv, PRIVATE_KEY_SIZE);
       FileName << "\nPub : ";  
 
       if (type == 1)
-        FileName << bin_to_str(pub, ADDRESS_SIZE);
+        FileName << p_bf->bin_to_str(pub, ADDRESS_SIZE);
       if (type == 2)
         FileName << pub;
 
@@ -98,7 +98,7 @@ unsigned char* csv_getfield(char* line, int num)
   return NULL;
 }
 
-void add_in_vector(unsigned char *hexstr) {
+void add_in_vector(unsigned char *hexstr, int type) {
   // printf("add_in_vector %s\n", hexstr);
 
   std::vector<unsigned char>  v;
@@ -110,8 +110,10 @@ void add_in_vector(unsigned char *hexstr) {
   for (int i = 0; i < tmp_len; i++) {
     v.push_back(tmp_bin[i]);
   }
-
-  p_bf->look_array_eth[v] = 1;
+  if (type == 1)
+    p_bf->look_array_eth[v] = 1;
+  if (type == 3)
+    p_bf->look_array_btc_p[v] = 1;
   // printf("add_in_vector4\n");
 
 }
@@ -136,7 +138,9 @@ void open_src_csv(const char *csv, int type)
     if (type == 2)
       p_bf->look_array_btc[a] = 1;
     if (type == 1)
-      add_in_vector((unsigned char *)a.c_str());
+      add_in_vector((unsigned char *)a.c_str(), type);
+    if (type == 3)
+      add_in_vector((unsigned char *)a.c_str(), type);
 
   }
   #if 1
@@ -155,6 +159,8 @@ void                load_address_db(const char *csv, int type) {
     printf("numbers %d\n", (int)p_bf->look_array_eth.size());
   if (type == 2)
     printf("numbers %d\n", (int)p_bf->look_array_btc.size());
+  if (type == 3)
+    printf("numbers %d\n", (int)p_bf->look_array_btc_p.size());
 }
 
 
@@ -169,6 +175,10 @@ void                compute() {
   unsigned char     priv_b[crypto_sign_SEEDBYTES + 32];
   unsigned char     address_e[PRIVATE_KEY_SIZE + 32];
   unsigned char     address_b[PRIVATE_KEY_SIZE + 32];
+  unsigned char     address_bp[PRIVATE_KEY_SIZE + 32];
+
+  memset(address_b, 0, sizeof(address_b));
+  memset(address_bp, 0, sizeof(address_bp));
 
   clock_t begin = clock();
   std::vector<unsigned char> e;
@@ -201,6 +211,8 @@ void                compute() {
       p_bf->gen_eth_key_pair(priv_e, address_e, e);
     if (p_bf->look_array_btc.size())    
       p_bf->gen_btc_key_pair(priv_b, address_b);
+    if (p_bf->look_array_btc_p.size())    
+      p_bf->gen_btc_pub(priv_b, address_bp, e);
 
     // print_key(priv_e, crypto_sign_SEEDBYTES, "start private");
     // print_key(address + 12, ADDRESS_SIZE, "start pub");
@@ -209,11 +221,25 @@ void                compute() {
 
 
     if (p_bf->look_array_btc.size()) {
-      std::string t = (char *)address_b;
+      std::string t1 = (char *)address_b;
+      // printf("find : %s\n", t2.c_str());
+      // printf("array : %s\n", p_bf->look_array_btc.begin()->first.c_str());
 
-      if (p_bf->look_array_btc.find(t) != p_bf->look_array_btc.end()) {
+      if (p_bf->look_array_btc.find(t1) != p_bf->look_array_btc.end()) {
         printf("\n____________________________________________________________________________________________________\n");
-        print_key(priv_b, crypto_sign_SEEDBYTES, "BTC finish private");
+        p_bf->print_key(priv_b, crypto_sign_SEEDBYTES, "BTC finish private");
+        printf("%30s : %s\n", "BTC finish address", address_b);
+
+        save_result(priv_b, address_b, 2);
+        exit(0);
+      }
+    }
+        // search in map for eth
+    if (p_bf->look_array_btc_p.size()) {
+      if (p_bf->look_array_btc_p.find(e) != p_bf->look_array_btc_p.end()) {
+        printf("\n____________________________________________________________________________________________________\n");
+        p_bf->gen_btc_key_pair(priv_b, address_b);
+        p_bf->print_key(priv_b, crypto_sign_SEEDBYTES, "BTC finish private");
         printf("%30s : %s\n", "BTC finish address", address_b);
 
         save_result(priv_b, address_b, 2);
@@ -225,8 +251,8 @@ void                compute() {
     if (p_bf->look_array_eth.size()) {
       if (p_bf->look_array_eth.find(e) != p_bf->look_array_eth.end()) {
         printf("\n____________________________________________________________________________________________________\n");
-        print_key(priv_e, crypto_sign_SEEDBYTES, "ETH finish private");
-        print_key(address_e + 12, ADDRESS_SIZE, "ETH finish address");
+        p_bf->print_key(priv_e, crypto_sign_SEEDBYTES, "ETH finish private");
+        p_bf->print_key(address_e + 12, ADDRESS_SIZE, "ETH finish address");
         save_result(priv_e, address_e + 12, 1);
         exit(0);
       }
@@ -236,8 +262,8 @@ void                compute() {
     if (p_bf->pattern_mode) {
       if (!memcmp(address_e + 12, p_bf->pattern_mode, p_bf->pattern_len)) {
         printf("\n____________________________________________________________________________________________________\n");
-        print_key(priv_e, crypto_sign_SEEDBYTES, "ETH_P finish pattern private");
-        print_key(address_e + 12, ADDRESS_SIZE, "ETH_P finish pattern address");
+        p_bf->print_key(priv_e, crypto_sign_SEEDBYTES, "ETH_P finish pattern private");
+        p_bf->print_key(address_e + 12, ADDRESS_SIZE, "ETH_P finish pattern address");
         save_result(priv_e, address_e + 12, 1);
         exit(0);
       }
@@ -251,9 +277,10 @@ void                compute() {
       double time_spent = (double)(curr - begin) / CLOCKS_PER_SEC;
       printf("\nelapsed %.2fs - speed %.2f/sec - done %lld\n", 
                 time_spent, p_bf->cpt / time_spent, p_bf->cpt);
-      print_key(priv_e, crypto_sign_SEEDBYTES, "ETH private prog");
-      print_key(address_e + 12, ADDRESS_SIZE, "ETH address prog");
-      print_key(priv_b, crypto_sign_SEEDBYTES, "BTC private prog");
+      p_bf->gen_btc_key_pair(priv_b, address_b);
+      p_bf->print_key(priv_e, crypto_sign_SEEDBYTES, "ETH private prog");
+      p_bf->print_key(address_e + 12, ADDRESS_SIZE, "ETH address prog");
+      p_bf->print_key(priv_b, crypto_sign_SEEDBYTES, "BTC private prog");
       printf("%30s : %s\n", "BTC address prog", address_b);
 
       // fflush(stdout);
@@ -270,7 +297,7 @@ void                compute() {
 
     // if (p_bf->cpt > 100000)
     //   break;
-    // if (p_bf->cpt > 100)
+    // if (p_bf->cpt > 0xc936)
     //   break;
   }
 
@@ -337,13 +364,17 @@ int main(int argc, char **argv) {
       if (noeth == false)
         load_address_db("addresses_sample_eth.csv", 1);
       if (nobtc == false)
-        load_address_db("addresses_sample_btc.csv", 2);
+        // load_address_db("addresses_sample_btc.csv", 2);
+        load_address_db("addresses_sample_btc_pub.csv", 3);
+
     }
     else {
       if (noeth == false)
         load_address_db("addresses_eth.csv", 1);
-      if (nobtc == false)
-        load_address_db("addresses_btc.csv", 2);
+      if (nobtc == false) {
+        // load_address_db("addresses_btc.csv", 2);
+        load_address_db("addresses_btc_pub.csv", 3);
+      }
     }
   }
 

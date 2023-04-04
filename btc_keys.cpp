@@ -69,17 +69,17 @@ void    c_bf::gen_btc_key_pair(unsigned char *seckey, unsigned char *address) {
   // print_key(public_key, len, "secp256k1_ec_pubkey_serialize");
 
 
-  for (j = 0; j < 65; j++) {
-    s[j] = public_key[j];
-    // printf("%02x", public_key[j]);
-  }
+  // for (j = 0; j < 65; j++) {
+  //   s[j] = public_key[j];
+  //   // printf("%02x", public_key[j]);
+  // }
   // printf("\n");
 
 
   /* Set 0x00 byte for main net */
   rmd[0] = 0;
   // RIPEMD160(SHA256(s, 65, 0), SHA256_DIGEST_LENGTH, rmd + 1);
-  RIPEMD160(SHA256(s, 33, 0), SHA256_DIGEST_LENGTH, rmd + 1);
+  RIPEMD160(SHA256(public_key, 33, 0), SHA256_DIGEST_LENGTH, rmd + 1);
 
   memcpy(rmd + 21, SHA256(SHA256(rmd, 21, 0), SHA256_DIGEST_LENGTH, 0), 4);
 
@@ -108,4 +108,56 @@ void    c_bf::gen_btc_key_pair(unsigned char *seckey, unsigned char *address) {
   }
 
   // printf("Address: %s\n", address);
+}
+
+void    c_bf::gen_btc_pub(unsigned char *seckey, unsigned char *pub, 
+                          std::vector<unsigned char> & e) { 
+
+  secp256k1_pubkey  pubkey;
+  unsigned char     public_key[65];
+  size_t            len = 65;
+  // byte              s[65];
+  byte              rmd[5 + RIPEMD160_DIGEST_LENGTH];
+
+  if (p_complexity) {
+    memset(seckey, 0, 32 - p_complexity);
+    if (p_complexity == 1 && !seckey[31])   // avoid all 0
+      seckey[31] = 1;
+    if (p_complexity == 2 && !seckey[31] && !seckey[30])   // avoid all 0
+      seckey[31] = 1;
+  }
+
+  // for (int i = 0; i < 32; i++) {
+  //   printf("%02x", seckey[i]);
+  // }
+  // printf("\n");
+
+  secp256k1_ec_pubkey_create(p_btc_ctx, &pubkey, seckey);
+
+  // for (int i = 0; i < 32; i++) {
+  //   printf("%02x", seckey[i]);
+  // }
+  // printf("\n");
+
+
+  // print_key(priv, crypto_sign_SEEDBYTES, "start private2");
+  // print_key(pubkey.data, 64, "secp256k1_ec_pubkey_create");
+  secp256k1_ec_pubkey_serialize(p_btc_ctx, public_key, &len, &pubkey, 
+    // SECP256K1_EC_UNCOMPRESSED
+    SECP256K1_EC_COMPRESSED
+    );
+  // print_key(public_key, len, "secp256k1_ec_pubkey_serialize");
+
+
+  // memcpy(s, public_key, 65);
+
+  /* Set 0x00 byte for main net */
+  rmd[0] = 0;
+  // RIPEMD160(SHA256(s, 65, 0), SHA256_DIGEST_LENGTH, rmd + 1);
+  RIPEMD160(SHA256(public_key, 33, 0), SHA256_DIGEST_LENGTH, rmd + 1);
+
+  e.clear();
+  for (int i = 0; i < 20; i++) {
+    e.push_back(rmd[i + 1]);
+  }
 }

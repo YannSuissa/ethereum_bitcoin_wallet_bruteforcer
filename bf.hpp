@@ -28,6 +28,8 @@ class c_bf {
   public:
     std::map<std::vector<unsigned char>, int> look_array_eth;
     std::map<std::string, int>                look_array_btc;
+    std::map<std::vector<unsigned char>, int> look_array_btc_p;
+
     long long int                             cpt = 0;
     unsigned char *                           pattern_mode = NULL;
     int                                       pattern_len = 0;
@@ -39,7 +41,11 @@ class c_bf {
     void            gen_eth_key_pair(unsigned char *priv, unsigned char *address, 
                                       std::vector<unsigned char> & e);
     void            gen_btc_key_pair(unsigned char *priv, unsigned char *address);
+    void            gen_btc_pub(unsigned char *priv, unsigned char *pub, 
+                                std::vector<unsigned char> & e);
 
+    void            print_key(unsigned char *key, int len, std::string label);
+    std::string     bin_to_str(unsigned char *key, int len);
 
     c_bf() { 
       //p_eth_ctx = secp256k1_context_create(SECP256K1_CONTEXT_NONE);
