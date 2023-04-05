@@ -168,11 +168,14 @@ void                load_address_db(const char *csv, int type) {
 
 
 // -------------------- COMPUTE --------------------
-
+#define USE_ETH      0
+#define USE_BTC      0
+#define USE_BTC_P    1
 
 void                compute() {
-  unsigned char     priv_e[crypto_sign_SEEDBYTES + 32];
   unsigned char     priv_b[crypto_sign_SEEDBYTES + 32];
+  unsigned char     priv_e[crypto_sign_SEEDBYTES + 32];
+
   unsigned char     address_e[PRIVATE_KEY_SIZE + 32];
   unsigned char     address_b[PRIVATE_KEY_SIZE + 32];
   unsigned char     address_bp[PRIVATE_KEY_SIZE + 32];
@@ -181,7 +184,10 @@ void                compute() {
   memset(address_bp, 0, sizeof(address_bp));
 
   clock_t begin = clock();
-  std::vector<unsigned char> e;
+  std::vector<unsigned char> e_e;
+  std::vector<unsigned char> e_bp;
+  std::string t1;
+  e_bp.resize(20);
 
   if (sodium_init() < 0) {
     fprintf(stderr, "Erreur : libsodium n'a pas pu être initialisé\n");
@@ -190,7 +196,7 @@ void                compute() {
 
 
   while (1) {
-    // gen a key
+    // gen a key that increment to 0xffffff
     if (!(p_bf->cpt % 0xffffff)) {
       randombytes_buf(priv_e, PRIVATE_KEY_SIZE);
       priv_e[PRIVATE_KEY_SIZE - 3] = 0;
@@ -205,51 +211,12 @@ void                compute() {
       }
       priv_e[PRIVATE_KEY_SIZE - 1]++;
     }
-    memcpy(priv_b, priv_e, PRIVATE_KEY_SIZE);
+    memcpy(priv_b, priv_e, PRIVATE_KEY_SIZE); 
+#if USE_ETH
 
-    if (p_bf->look_array_eth.size())
-      p_bf->gen_eth_key_pair(priv_e, address_e, e);
-    if (p_bf->look_array_btc.size())    
-      p_bf->gen_btc_key_pair(priv_b, address_b);
-    if (p_bf->look_array_btc_p.size())    
-      p_bf->gen_btc_pub(priv_b, address_bp, e);
-
-    // print_key(priv_e, crypto_sign_SEEDBYTES, "start private");
-    // print_key(address + 12, ADDRESS_SIZE, "start pub");
-    // printf("%s\n", address);
-    // printf("%30s : %s\n", "finish address pub", address);
-
-
-    if (p_bf->look_array_btc.size()) {
-      std::string t1 = (char *)address_b;
-      // printf("find : %s\n", t2.c_str());
-      // printf("array : %s\n", p_bf->look_array_btc.begin()->first.c_str());
-
-      if (p_bf->look_array_btc.find(t1) != p_bf->look_array_btc.end()) {
-        printf("\n____________________________________________________________________________________________________\n");
-        p_bf->print_key(priv_b, crypto_sign_SEEDBYTES, "BTC finish private");
-        printf("%30s : %s\n", "BTC finish address", address_b);
-
-        save_result(priv_b, address_b, 2);
-        exit(0);
-      }
-    }
-        // search in map for eth
-    if (p_bf->look_array_btc_p.size()) {
-      if (p_bf->look_array_btc_p.find(e) != p_bf->look_array_btc_p.end()) {
-        printf("\n____________________________________________________________________________________________________\n");
-        p_bf->gen_btc_key_pair(priv_b, address_b);
-        p_bf->print_key(priv_b, crypto_sign_SEEDBYTES, "BTC finish private");
-        printf("%30s : %s\n", "BTC finish address", address_b);
-
-        save_result(priv_b, address_b, 2);
-        exit(0);
-      }
-    }
-   
-    // search in map for eth
+    // search in map for eth address
     if (p_bf->look_array_eth.size()) {
-      if (p_bf->look_array_eth.find(e) != p_bf->look_array_eth.end()) {
+      if (p_bf->look_array_eth.find(e_e) != p_bf->look_array_eth.end()) {
         printf("\n____________________________________________________________________________________________________\n");
         p_bf->print_key(priv_e, crypto_sign_SEEDBYTES, "ETH finish private");
         p_bf->print_key(address_e + 12, ADDRESS_SIZE, "ETH finish address");
@@ -268,8 +235,55 @@ void                compute() {
         exit(0);
       }
     }
+#endif
 
 
+#if USE_ETH
+    if (p_bf->look_array_eth.size())
+      p_bf->gen_eth_key_pair(priv_e, address_e, e_e);
+#endif
+#if USE_BTC
+    if (p_bf->look_array_btc.size())    
+      p_bf->gen_btc_key_pair(priv_b, address_b);
+#endif
+#if USE_BTC_P
+    // if (p_bf->look_array_btc_p.size())    
+      p_bf->gen_btc_pub(priv_b, address_bp, e_bp);
+#endif
+    // print_key(priv, crypto_sign_SEEDBYTES, "start private");
+    // print_key(address + 12, ADDRESS_SIZE, "start pub");
+    // printf("%s\n", address);
+    // printf("%30s : %s\n", "finish address pub", address);
+
+#if USE_BTC
+    // search in map for btc address
+    if (p_bf->look_array_btc.size()) {
+      t1 = (char *)address_b;
+      // printf("find : %s\n", t2.c_str());
+      // printf("array : %s\n", p_bf->look_array_btc.begin()->first.c_str());
+
+      if (p_bf->look_array_btc.find(t1) != p_bf->look_array_btc.end()) {
+        printf("\n____________________________________________________________________________________________________\n");
+        p_bf->print_key(priv_b, crypto_sign_SEEDBYTES, "BTC finish private");
+        printf("%30s : %s\n", "BTC finish address", address_b);
+
+        exit(0);
+      }
+    }
+#endif
+
+#if USE_BTC_P
+    // search in map for btc public 160
+    if (p_bf->look_array_btc_p.find(e_bp) != p_bf->look_array_btc_p.end()) {
+      printf("\n____________________________________________________________________________________________________\n");
+      p_bf->gen_btc_key_pair(priv_b, address_b);
+      p_bf->print_key(priv_b, crypto_sign_SEEDBYTES, "BTC finish private");
+      printf("%30s : %s\n", "BTC finish address", address_b);
+
+      save_result(priv_b, address_b, 2);
+      exit(0);
+    }
+#endif
 
     // progress printing 
     if (!(p_bf->cpt % 1000000) || p_bf->cpt == 200000) {
@@ -278,8 +292,10 @@ void                compute() {
       printf("\nelapsed %.2fs - speed %.2f/sec - done %lld\n", 
                 time_spent, p_bf->cpt / time_spent, p_bf->cpt);
       p_bf->gen_btc_key_pair(priv_b, address_b);
+// #if USE_ETH
       p_bf->print_key(priv_e, crypto_sign_SEEDBYTES, "ETH private prog");
       p_bf->print_key(address_e + 12, ADDRESS_SIZE, "ETH address prog");
+// #endif
       p_bf->print_key(priv_b, crypto_sign_SEEDBYTES, "BTC private prog");
       printf("%30s : %s\n", "BTC address prog", address_b);
 

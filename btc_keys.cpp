@@ -35,15 +35,12 @@ void    c_bf::gen_btc_key_pair(unsigned char *seckey, unsigned char *address) {
   secp256k1_pubkey  pubkey;
   unsigned char     public_key[65];
   size_t            len = 65;
-  byte              s[65];
+  // byte              s[65];
   byte              rmd[5 + RIPEMD160_DIGEST_LENGTH];
-  int               j;
 
   if (p_complexity) {
     memset(seckey, 0, 32 - p_complexity);
-    if (p_complexity == 1 && !seckey[31])   // avoid all 0
-      seckey[31] = 1;
-    if (p_complexity == 2 && !seckey[31] && !seckey[30])   // avoid all 0
+    if (*(unsigned int *)&seckey[32 - sizeof(unsigned int)] == 0)
       seckey[31] = 1;
   }
 
@@ -116,14 +113,11 @@ void    c_bf::gen_btc_pub(unsigned char *seckey, unsigned char *pub,
   secp256k1_pubkey  pubkey;
   unsigned char     public_key[65];
   size_t            len = 65;
-  // byte              s[65];
   byte              rmd[5 + RIPEMD160_DIGEST_LENGTH];
 
   if (p_complexity) {
     memset(seckey, 0, 32 - p_complexity);
-    if (p_complexity == 1 && !seckey[31])   // avoid all 0
-      seckey[31] = 1;
-    if (p_complexity == 2 && !seckey[31] && !seckey[30])   // avoid all 0
+    if (*(unsigned int *)&seckey[32 - sizeof(unsigned int)] == 0)
       seckey[31] = 1;
   }
 
@@ -132,13 +126,13 @@ void    c_bf::gen_btc_pub(unsigned char *seckey, unsigned char *pub,
   // }
   // printf("\n");
 
+
   secp256k1_ec_pubkey_create(p_btc_ctx, &pubkey, seckey);
 
   // for (int i = 0; i < 32; i++) {
   //   printf("%02x", seckey[i]);
   // }
   // printf("\n");
-
 
   // print_key(priv, crypto_sign_SEEDBYTES, "start private2");
   // print_key(pubkey.data, 64, "secp256k1_ec_pubkey_create");
@@ -148,16 +142,10 @@ void    c_bf::gen_btc_pub(unsigned char *seckey, unsigned char *pub,
     );
   // print_key(public_key, len, "secp256k1_ec_pubkey_serialize");
 
-
-  // memcpy(s, public_key, 65);
-
   /* Set 0x00 byte for main net */
   rmd[0] = 0;
   // RIPEMD160(SHA256(s, 65, 0), SHA256_DIGEST_LENGTH, rmd + 1);
   RIPEMD160(SHA256(public_key, 33, 0), SHA256_DIGEST_LENGTH, rmd + 1);
 
-  e.clear();
-  for (int i = 0; i < 20; i++) {
-    e.push_back(rmd[i + 1]);
-  }
+  memcpy(&e[0], &rmd[1], 20);
 }
