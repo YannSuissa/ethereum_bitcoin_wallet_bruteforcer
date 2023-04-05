@@ -11,6 +11,12 @@ using namespace std;
 //https://privatekeyfinder.io/bitcoin-puzzle/
 //https://privatekeys.pw/puzzles/bitcoin-puzzle-tx
 
+// install clang 14 
+//  wget https://apt.llvm.org/llvm.sh
+//  chmod +x llvm.sh
+//  sudo ./llvm.sh 14
+// set as default
+//  update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-14 60
 
 // -------------------- GLOBALS --------------------
 
@@ -292,10 +298,10 @@ void                compute() {
       printf("\nelapsed %.2fs - speed %.2f/sec - done %lld\n", 
                 time_spent, p_bf->cpt / time_spent, p_bf->cpt);
       p_bf->gen_btc_key_pair(priv_b, address_b);
-// #if USE_ETH
+#if USE_ETH
       p_bf->print_key(priv_e, crypto_sign_SEEDBYTES, "ETH private prog");
       p_bf->print_key(address_e + 12, ADDRESS_SIZE, "ETH address prog");
-// #endif
+#endif
       p_bf->print_key(priv_b, crypto_sign_SEEDBYTES, "BTC private prog");
       printf("%30s : %s\n", "BTC address prog", address_b);
 
