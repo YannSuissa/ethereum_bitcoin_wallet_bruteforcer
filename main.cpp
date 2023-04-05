@@ -218,8 +218,8 @@ void                compute() {
       priv_e[PRIVATE_KEY_SIZE - 1]++;
     }
     memcpy(priv_b, priv_e, PRIVATE_KEY_SIZE); 
-#if USE_ETH
 
+#if USE_ETH
     // search in map for eth address
     if (p_bf->look_array_eth.size()) {
       if (p_bf->look_array_eth.find(e_e) != p_bf->look_array_eth.end()) {
