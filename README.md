@@ -1,4 +1,5 @@
-Ethereum &amp; Bitcoin wallet bruteforcer
+Ethereum &amp; Bitcoin wallet bruteforcer - 100% cpu
+Works on Linux and Mac & Mac silicium
 
 For the bitcoin puzzle and more.
 
