@@ -108,7 +108,7 @@ void    c_bf::gen_btc_key_pair(unsigned char *seckey, unsigned char *address) {
 }
 
 void    c_bf::gen_btc_pub(unsigned char *seckey, unsigned char *pub, 
-                          std::vector<unsigned char> & e) { 
+                            std::vector<unsigned char> & e) { 
 
   secp256k1_pubkey  pubkey;
   unsigned char     public_key[65];

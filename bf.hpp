@@ -6,9 +6,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
-#include "keccak-tiny.h"
-#include <secp256k1.h>
-// #include <secp256k1_extrakeys.h>
+
 #include <time.h>
 #include <string>
 #include <map>
@@ -17,7 +15,6 @@
 #include <fstream> 
 #include <sstream>
 #include <iomanip>
-// #include <format>
 
 
 #define PRIVATE_KEY_SIZE 32
@@ -57,6 +54,5 @@ class c_bf {
       secp256k1_context_destroy(p_btc_ctx);
     }
 };
-
 
 extern c_bf *p_bf;

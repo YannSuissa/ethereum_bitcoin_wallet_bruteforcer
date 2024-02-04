@@ -254,7 +254,7 @@ void                compute() {
 #endif
 #if USE_BTC_P
     // if (p_bf->look_array_btc_p.size())    
-      p_bf->gen_btc_pub(priv_b, address_bp, e_bp);
+    p_bf->gen_btc_pub(priv_b, address_bp, e_bp);
 #endif
     // print_key(priv, crypto_sign_SEEDBYTES, "start private");
     // print_key(address + 12, ADDRESS_SIZE, "start pub");
