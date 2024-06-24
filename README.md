@@ -4,5 +4,6 @@ Ethereum &amp; Bitcoin wallet bruteforcer<br/>
 
 For the bitcoin puzzle and more.
 
-It's close to impossible, like many things, that people have done...
+"It always seems impossible until it's done."
+Nelson Mandela
 
