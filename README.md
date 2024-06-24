@@ -4,6 +4,6 @@ Ethereum &amp; Bitcoin wallet bruteforcer<br/>
 
 For the bitcoin puzzle and more.
 
-"It always seems impossible until it's done."
+"It always seems impossible until it's done."<br/>
 Nelson Mandela
 
